@@ -2,7 +2,7 @@
 with t1 as
 (
 --запрос на нахождение суммы выручки продовца по дате и продавцу
-	select distinct concat(first_name,' ',last_name) as saler 
+	select distinct concat(first_name,' ',last_name) as seller 
 		,sale_date
 		,sum(quantity*price) over(partition by sale_date, sales_person_id) as sumperson
 	from employees e 
@@ -12,13 +12,13 @@ with t1 as
 sumday as 
 (
 --запрос на преобразование даты в день недели
-	select saler,  to_char(sale_date,'day') as day_of_week ,sumperson from t1
+	select seller,  to_char(sale_date,'day') as day_of_week ,sumperson from t1
 ),
 cas as
 (
 --запрос на округление итогового результата, нумерация дней от 1-7 начиная с понедельника, 
 --сортировка результата по итоговым значениям
-select distinct saler, day_of_week, round(sum(sumperson) over(partition by day_of_week,saler)) as income
+select distinct seller, day_of_week, round(sum(sumperson) over(partition by day_of_week,seller)) as income
 	,(case 
 		when day_of_week like '%monday%' then 1
 		when day_of_week like '%tuesday%' then 2
@@ -30,10 +30,10 @@ select distinct saler, day_of_week, round(sum(sumperson) over(partition by day_o
 	end) as nomday
 	
 from sumday
-order by nomday, saler
+order by nomday, seller
 )
 --запрос на вывод итогового отчета
-select saler, day_of_week, income from cas
+select seller, day_of_week, income from cas
 
 
 
