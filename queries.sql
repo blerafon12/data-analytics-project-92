@@ -12,7 +12,7 @@ select age,
 		when age > 40 then '40+'
 	end as age_category
 from customers c 
-)
+);
 --запрос на получение итогового результата
 --определение выборки с уникальными значениями и подсчет покупателей определенной возрастной группы
 select distinct age_category
@@ -30,7 +30,7 @@ select distinct to_char(sale_date,'YYYY-MM') as selling_month, customer_id
 from sales s
 inner join products p  on p.product_id = s.product_id
 order by selling_month 
-)
+);
 --запрос на получение итогового результата
 select distinct selling_month
 	,count(customer_id) over(partition by selling_month) as total_customers
@@ -71,7 +71,7 @@ select distinct seller, day_of_week, floor(sum(sumperson) over(partition by day_
 	
 from sumday
 order by nomday, seller
-)
+);
 --запрос на вывод итогового отчета
 select seller, day_of_week, income from cas;
 ----------------------------------------------------------------------------------
@@ -97,7 +97,7 @@ select distinct seller
 	,floor(all_s/all_c) as average_all
 from t1
 order by average_income
-)
+);
 --запрос на получение итоговых значений
 select seller,average_income from t2
 where average_income<average_all;
@@ -114,7 +114,7 @@ from employees e
 inner join sales s on e.employee_id = s.sales_person_id
 inner join products p on p.product_id = s.product_id
 order by sales_id
-)
+);
 --запрос на получение итогового результата
 select distinct seller, operations, floor(income) as income from total
 order by income desc limit 10;
