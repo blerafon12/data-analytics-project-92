@@ -1,5 +1,5 @@
 --считаем количиство ID пользователей из таблицы customers
-select count(customer_id) as custamers_count from customers
+select count(customer_id) as custamers_count from customers;
 -----------------------------------------------------------------
 --количество покупателей в разных возрастных группах: 16-25, 26-40 и 40+
 with t1 as
@@ -18,7 +18,7 @@ from customers c
 select distinct age_category
 	,count(age) over(partition by age_category) as age_count
 from t1
-order by age_category
+order by age_category;
  -------------------------------------------------------------------------
 --отчет по количеству уникальных покупателей и выручке, которую они принесли
 with t1 as 
@@ -36,7 +36,7 @@ select distinct selling_month
 	,count(customer_id) over(partition by selling_month) as total_customers
 	,income
 from t1
-order by selling_month
+order by selling_month;
 ------------------------------------------------------------------------------
 --отчет содержит информацию о выручке по дням недели
 with t1 as
@@ -73,7 +73,7 @@ from sumday
 order by nomday, seller
 )
 --запрос на вывод итогового отчета
-select seller, day_of_week, income from cas
+select seller, day_of_week, income from cas;
 ----------------------------------------------------------------------------------
 --отчет содержит информацию о продавцах, 
 --чья средняя выручка за сделку меньше средней выручки за сделку по всем продавцам
@@ -100,7 +100,7 @@ order by average_income
 )
 --запрос на получение итоговых значений
 select seller,average_income from t2
-where average_income<average_all
+where average_income<average_all;
 ---------------------------------------------------------------------------------------
 --отчет о десятке лучших продавцов
 with total as
@@ -117,4 +117,4 @@ order by sales_id
 )
 --запрос на получение итогового результата
 select distinct seller, operations, floor(income) as income from total
-order by income desc limit 10
+order by income desc limit 10;
