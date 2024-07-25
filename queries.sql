@@ -68,7 +68,7 @@ sumday as (
         seller,
         sumperson,
         to_char(sale_date, 'day') as day_of_week,
-        DATE_PART('isodow', sale_date) as nomday
+        date_part('isodow', sale_date) as nomday
     from t1
 )
 
