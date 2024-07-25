@@ -32,10 +32,10 @@ with t1 as (
         s.customer_id,
         to_char(s.sale_date,'YYYY-MM') as selling_month,
         floor(sum(s.quantity * p.price) 
-        over (partition by date_trunc('month', s.sale_date))) as income
+            over (partition by date_trunc('month', s.sale_date))) as income
     from sales s
-    inner join products p on s.product_id=p.product_id
-    order by selling_month 
+    inner join products p on s.product_id = p.product_id
+    order by to_char(s.sale_date,'YYYY-MM')
 )
 
 --запрос на получение итогового результата
