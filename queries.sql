@@ -93,13 +93,13 @@ with t1 as (
         s.sales_person_id,
         concat(e.first_name, ' ', e.last_name) as seller,
         count(s.sales_id)
-        over (partition by s.sales_person_id) as c_saler,
+            over (partition by s.sales_person_id) as c_saler,
         sum(s.quantity * p.price)
-        over (partition by s.sales_person_id) as s_saler,
+            over (partition by s.sales_person_id) as s_saler,
         count(s.sales_id)
-        over () as all_c,
+            over () as all_c,
         sum(s.quantity * p.price)
-        over () as all_s
+            over () as all_s
     from employees as e
     inner join sales as s on e.employee_id = s.sales_person_id
     inner join products as p on s.product_id = p.product_id
@@ -112,7 +112,7 @@ t2 as (
         floor(s_saler / c_saler) as average_income,
         floor(all_s / all_c) as average_all
     from t1
-	order by average_income
+    order by average_income
 )
 
 --запрос на получение итоговых значений
