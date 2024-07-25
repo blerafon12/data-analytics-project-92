@@ -125,3 +125,31 @@ select
     average_income
 from t2
 where average_income < average_all;
+------------------------------------------------------------------
+--отчет о десятке лучших продавцов
+with total as (
+--запрос на подсчет количества сделок продовца
+-- нахождение суммы продаж для продавца
+    select distinct
+        s.sales_person_id,
+        s.sales_id,
+        concat(e.first_name, ' ', e.last_name) as seller,
+        count(s.sales_id)
+            over (partition by s.sales_person_id)
+        as operations,
+        sum(p.price * s.quantity)
+            over(partition by s.sales_person_id)
+        as income
+    from employees as e 
+    inner join sales as s on e.employee_id = s.sales_person_id
+    inner join products p on  s.product_id = p.product_id
+    order by s.sales_id
+)
+
+--запрос на получение итогового результата
+select distinct
+    seller,
+    operations,
+    floor(income) as income 
+from total
+order by income desc limit 10;
