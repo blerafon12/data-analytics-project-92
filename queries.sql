@@ -35,8 +35,8 @@ with t1 as (
             sum(s.quantity * p.price)
                 over (partition by date_trunc('month', s.sale_date))
         ) as income
-    from sales s
-    inner join products p on s.product_id = p.product_id
+    from sales as s
+    inner join products as p on s.product_id = p.product_id
     order by to_char(s.sale_date, 'YYYY-MM')
 )
 
