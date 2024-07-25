@@ -53,13 +53,13 @@ order by selling_month;
 with t1 as (
 --запрос на нахождение суммы выручки продовца по дате и продавцу
     select
-        sale_date,
-        concat(first_name, ' ', last_name) as seller,
-        sum(quantity*price) as sumperson
-    from employees as e 
-    inner join sales s on e.employee_id = s.sales_person_id
-    inner join products p on p.product_id = s.product_id
-    group by concat(first_name, ' ', last_name), sale_date
+        s.sale_date,
+        concat(e.first_name, ' ', e.last_name) as seller,
+        sum(s.quantity * p.price) as sumperson
+    from employees as e
+    inner join sales as s on e.employee_id = s.sales_person_id
+    inner join products as p on s.product_id = p.product_id
+    group by concat(e.first_name, ' ', e.last_name), s.sale_date
 ),
 sumday as (
 --запрос на преобразование даты в день недели
@@ -67,14 +67,15 @@ sumday as (
     select
         seller,
         sumperson,
-        to_char(sale_date,'day') as day_of_week,
+        to_char(sale_date, 'day') as day_of_week,
         DATE_PART('isodow', sale_date) as nomday
     from t1
 )
+
 select
     seller,
     day_of_week,
-    floor(sum(sumperson)) as income 
+    floor(sum(sumperson)) as income
 from sumday
 group by seller, day_of_week, nomday
-order by nomday,seller;
+order by nomday, seller;
