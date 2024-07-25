@@ -2,9 +2,9 @@
 select count(customer_id) as custamers_count from customers;
 -----------------------------------------------------------------
 --количество покупателей в разных возрастных группах: 16-25, 26-40 и 40+
-with t1 as(
+with t1 as (
 --запрос для распределения возрастных груп относительно столбца age 
-    select 
+	select
     	age,
 		case 
 			when age between 16 and 25 then '16-25'
