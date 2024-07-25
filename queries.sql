@@ -160,25 +160,26 @@ order by income desc limit 10;
 with t1 as (
 --запрос на объединение столбцов имя, фамилия для покупателей и продавцов
 --и вывод всех строк для которых price = 0
-    select  
+    select
         s.customer_id as sc,
         s.sale_date,
         concat(c.first_name, ' ', c.last_name) as customer,
         concat(e.first_name, ' ', e.last_name) as seller
-    from customers as c 
+    from customers as c
     inner join sales as s on c.customer_id = s.customer_id
     inner join employees as e on s.sales_person_id = e.employee_id
     inner join products as p on s.product_id = p.product_id
-    where price = 0
+    where p.price = 0
 ),
 
 t2 as (
---запрос на нумерацию строк для покупателей по дате, попавших в предыдущую выборку
+--запрос на нумерацию строк для покупателей по дате,
+--попавших в предыдущую выборку
     select
         *,
         row_number()
             over (partition by customer order by sale_date)
-        as row
+        as row1
     from t1
     order by sc
 )
@@ -188,6 +189,6 @@ t2 as (
 select
     customer,
     sale_date,
-    seller 
+    seller
 from t2
-where row = 1;
+where row1 = 1;
