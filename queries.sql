@@ -61,6 +61,7 @@ with t1 as (
     inner join products as p on s.product_id = p.product_id
     group by concat(e.first_name, ' ', e.last_name), s.sale_date
 ),
+
 sumday as (
 --запрос на преобразование даты в день недели
 --определение начала недели (1-понедельник, 2-вторник,...,7-воскресенье)
