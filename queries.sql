@@ -13,12 +13,13 @@ with t1 as (
         end as age_category
     from customers
 )
+	
 --запрос на получение итогового результата
 --определение выборки с уникальными значениями 
 --и подсчет покупателей определенной возрастной группы
-select 
-	distinct age_category
-	,count(age) as age_count
+select
+    age_category,
+    count(age) as age_count
 from t1
 group by age_category
 order by age_category;
