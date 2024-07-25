@@ -48,3 +48,33 @@ select
 from t1
 group by selling_month, income
 order by selling_month;
+------------------------------------------------------------------------------
+--отчет содержит информацию о выручке по дням недели
+with t1 as (
+--запрос на нахождение суммы выручки продовца по дате и продавцу
+    select
+        sale_date,
+        concat(first_name, ' ', last_name) as seller,
+        sum(quantity*price) as sumperson
+    from employees as e 
+    inner join sales s on e.employee_id = s.sales_person_id
+    inner join products p on p.product_id = s.product_id
+    group by concat(first_name, ' ', last_name), sale_date
+),
+sumday as (
+--запрос на преобразование даты в день недели
+--определение начала недели (1-понедельник, 2-вторник,...,7-воскресенье)
+    select
+        seller,
+        sumperson,
+        to_char(sale_date,'day') as day_of_week,
+        DATE_PART('isodow', sale_date) as nomday
+    from t1
+)
+select
+    seller,
+    day_of_week,
+    floor(sum(sumperson)) as income 
+from sumday
+group by seller, day_of_week, nomday
+order by nomday,seller;
