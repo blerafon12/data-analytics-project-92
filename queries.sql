@@ -7,8 +7,8 @@ select count(customer_id) as custamers_count from customers;
 select
     case
         when age between 16 and 25 then '16-25'
-	when age between 26 and 40 then '26-40'
-	when age > 40 then '40+'
+        when age between 26 and 40 then '26-40'
+        when age > 40 then '40+'
     end as age_category,
     count(age) as age_count
 from customers
@@ -56,9 +56,10 @@ inner join sales as s on e.employee_id = s.sales_person_id
 inner join products as p on s.product_id = p.product_id
 group by seller, s.sales_person_id
 having
-    floor(avg(s.quantity * p.price)) < (select avg(s.quantity * p.price)
-				from sales as s
-				inner join products as p on s.product_id = p.product_id
+    floor(avg(s.quantity * p.price)) < (
+        select avg(s.quantity * p.price)
+        from sales as s
+        inner join products as p on s.product_id = p.product_id
 			)
 order by avg;
 ------------------------------------------------------------------
@@ -68,9 +69,9 @@ select
     concat(e.first_name, ' ', e.last_name) as seller,
     count(s.sales_id) as operations,
     floor(sum(p.price * s.quantity)) as income
-from employees as e 
+from employees as e
 inner join sales as s on e.employee_id = s.sales_person_id
-inner join products as p on p.product_id = s.product_id
+inner join products as p on s.product_id = p.product_id
 group by seller
 order by income desc limit 10;
 -----------------------------------------------------------------------
