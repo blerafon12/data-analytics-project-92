@@ -60,7 +60,7 @@ having
         select avg(s.quantity * p.price)
         from sales as s
         inner join products as p on s.product_id = p.product_id
-			)
+    )
 order by avg;
 ------------------------------------------------------------------
 --отчет о десятке лучших продавцов
@@ -80,8 +80,8 @@ order by income desc limit 10;
 --(акционные товары отпускали со стоимостью равной 0)
 --запрос с итоговым результатом
 select distinct on (concat(c.first_name, ' ', c.last_name))
-    concat(c.first_name, ' ', c.last_name) as customer,
     s.sale_date,
+    concat(c.first_name, ' ', c.last_name) as customer,
     concat(e.first_name, ' ', e.last_name) as seller
 from customers as c
 inner join sales as s on c.customer_id = s.customer_id
