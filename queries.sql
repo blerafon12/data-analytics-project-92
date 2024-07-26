@@ -6,9 +6,9 @@ select count(customer_id) as custamers_count from customers;
 --и подсчет покупателей определенной возрастной группы
 select
     case
-            when age between 16 and 25 then '16-25'
-            when age between 26 and 40 then '26-40'
-            when age > 40 then '40+'
+        when age between 16 and 25 then '16-25'
+	when age between 26 and 40 then '26-40'
+	when age > 40 then '40+'
     end as age_category,
     count(age) as age_count
 from customers
@@ -22,11 +22,11 @@ order by age_category;
 select
     to_char(s.sale_date, 'YYYY-MM') as selling_month,
     floor(
-            sum(s.quantity * p.price)
-        ) as income,
+        sum(s.quantity * p.price)
+    ) as income,
     count(distinct s.customer_id) as total_customers
 from sales as s
-    inner join products as p on s.product_id = p.product_id
+inner join products as p on s.product_id = p.product_id
 group by to_char(s.sale_date, 'YYYY-MM')
 order by selling_month;
 ------------------------------------------------------------------------------
@@ -38,8 +38,8 @@ select
     to_char(s.sale_date, 'day') as day_of_week,
     floor(sum(s.quantity * p.price)) as income
 from employees as e
-    inner join sales as s on e.employee_id = s.sales_person_id
-    inner join products as p on s.product_id = p.product_id
+inner join sales as s on e.employee_id = s.sales_person_id
+inner join products as p on s.product_id = p.product_id
 group by seller, day_of_week
 order by day_of_week, seller;
 --date_part('isodow', sale_date)
@@ -55,7 +55,8 @@ from employees as e
 inner join sales as s on e.employee_id = s.sales_person_id
 inner join products as p on s.product_id = p.product_id
 group by seller, s.sales_person_id
-having floor(avg(s.quantity * p.price)) < (select avg(s.quantity * p.price)
+having
+    floor(avg(s.quantity * p.price)) < (select avg(s.quantity * p.price)
 				from sales as s
 				inner join products as p on s.product_id = p.product_id
 			)
@@ -63,13 +64,13 @@ order by avg;
 ------------------------------------------------------------------
 --отчет о десятке лучших продавцов
 --запрос на получение итогового результата
-select distinct
-    concat(e.first_name,' ',e.last_name) as seller,
+select
+    concat(e.first_name, ' ', e.last_name) as seller,
     count(s.sales_id) as operations,
-    floor(sum(p.price * s.quantity)) as income 
-from employees e 
-inner join sales s on e.employee_id = s.sales_person_id
-inner join products p on p.product_id = s.product_id
+    floor(sum(p.price * s.quantity)) as income
+from employees as e 
+inner join sales as s on e.employee_id = s.sales_person_id
+inner join products as p on p.product_id = s.product_id
 group by seller
 order by income desc limit 10;
 -----------------------------------------------------------------------
