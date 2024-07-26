@@ -1,194 +1,89 @@
 --считаем количиство ID пользователей из таблицы customers
 select count(customer_id) as custamers_count from customers;
 -----------------------------------------------------------------
---количество покупателей в разных возрастных группах: 16-25, 26-40 и 40+
-with t1 as (
---запрос для распределения возрастных груп относительно столбца age 
-    select
-        age,
-        case
-            when age between 16 and 25 then '16-25'
-            when age between 26 and 40 then '26-40'
-            when age > 40 then '40+'
-        end as age_category
-    from customers
-)
-
 --запрос на получение итогового результата
 --определение выборки с уникальными значениями 
 --и подсчет покупателей определенной возрастной группы
 select
-    age_category,
+    case
+            when age between 16 and 25 then '16-25'
+            when age between 26 and 40 then '26-40'
+            when age > 40 then '40+'
+    end as age_category,
     count(age) as age_count
-from t1
+from customers
 group by age_category
 order by age_category;
 -------------------------------------------------------------------------
 --отчет по количеству уникальных покупателей и выручке, которую они принесли
-with t1 as (
+--запрос на получение итогового результата
 --приведение столбца sale_date к виду ГОД-МЕСЯЦ
 --подсчет суммы выручки за этот месяц округленной до целого
-    select distinct
-        s.customer_id,
-        to_char(s.sale_date, 'YYYY-MM') as selling_month,
-        floor(
-            sum(s.quantity * p.price)
-                over (partition by date_trunc('month', s.sale_date))
-        ) as income
-    from sales as s
-    inner join products as p on s.product_id = p.product_id
-    order by to_char(s.sale_date, 'YYYY-MM')
-)
-
---запрос на получение итогового результата
 select
-    selling_month,
-    income,
-    count(customer_id) as total_customers
-from t1
-group by selling_month, income
+    to_char(s.sale_date, 'YYYY-MM') as selling_month,
+    floor(
+            sum(s.quantity * p.price)
+        ) as income,
+    count(distinct s.customer_id) as total_customers
+from sales as s
+    inner join products as p on s.product_id = p.product_id
+group by to_char(s.sale_date, 'YYYY-MM')
 order by selling_month;
 ------------------------------------------------------------------------------
 --отчет содержит информацию о выручке по дням недели
-with t1 as (
---запрос на нахождение суммы выручки продовца по дате и продавцу
-    select
-        s.sale_date,
-        concat(e.first_name, ' ', e.last_name) as seller,
-        sum(s.quantity * p.price) as sumperson
-    from employees as e
+--запрос на получение итогового результата
+--отсортировать по дням не получается
+select
+    concat(e.first_name, ' ', e.last_name) as seller,
+    to_char(s.sale_date, 'day') as day_of_week,
+    floor(sum(s.quantity * p.price)) as income
+from employees as e
     inner join sales as s on e.employee_id = s.sales_person_id
     inner join products as p on s.product_id = p.product_id
-    group by concat(e.first_name, ' ', e.last_name), s.sale_date
-),
-
-sumday as (
---запрос на преобразование даты в день недели
---определение начала недели (1-понедельник, 2-вторник,...,7-воскресенье)
-    select
-        seller,
-        sumperson,
-        to_char(sale_date, 'day') as day_of_week,
-        date_part('isodow', sale_date) as nomday
-    from t1
-)
-
-select
-    seller,
-    day_of_week,
-    floor(sum(sumperson)) as income
-from sumday
-group by seller, day_of_week, nomday
-order by nomday, seller;
+group by seller, day_of_week
+order by day_of_week, seller;
+--date_part('isodow', sale_date)
 -----------------------------------------------------------------
 --отчет содержит информацию о продавцах, 
 --чья средняя выручка за сделку меньше средней выручки за сделку 
 --по всем продавцам
-with t1 as (
---запрос на получение имени, фамилии продавца; количиства сделок; 
---выручки продавца за все сделки
-    select
-        s.sales_id,
-        s.product_id,
-        s.sales_person_id,
-        concat(e.first_name, ' ', e.last_name) as seller,
-        count(s.sales_id)
-            over (partition by s.sales_person_id)
-        as c_saler,
-        sum(s.quantity * p.price)
-            over (partition by s.sales_person_id)
-        as s_saler,
-        count(s.sales_id)
-            over ()
-        as all_c,
-        sum(s.quantity * p.price)
-            over ()
-        as all_s
-    from employees as e
-    inner join sales as s on e.employee_id = s.sales_person_id
-    inner join products as p on s.product_id = p.product_id
-),
-
-t2 as (
---запрос на получение среднего по продовцу и по всем продавцам
-    select distinct
-        seller,
-        floor(s_saler / c_saler) as average_income,
-        floor(all_s / all_c) as average_all
-    from t1
-    order by average_income
-)
-
 --запрос на получение итоговых значений
 select
-    seller,
-    average_income
-from t2
-where average_income < average_all;
+    concat(e.first_name, ' ', e.last_name) as seller,
+    floor(avg(s.quantity * p.price)) as avg
+from employees as e
+inner join sales as s on e.employee_id = s.sales_person_id
+inner join products as p on s.product_id = p.product_id
+group by seller, s.sales_person_id
+having floor(avg(s.quantity * p.price)) < (select avg(s.quantity * p.price)
+				from sales as s
+				inner join products as p on s.product_id = p.product_id
+			)
+order by avg;
 ------------------------------------------------------------------
 --отчет о десятке лучших продавцов
-with total as (
---запрос на подсчет количества сделок продовца
--- нахождение суммы продаж для продавца
-    select distinct
-        s.sales_person_id,
-        s.sales_id,
-        concat(e.first_name, ' ', e.last_name) as seller,
-        count(s.sales_id)
-            over (partition by s.sales_person_id)
-        as operations,
-        sum(p.price * s.quantity)
-            over (partition by s.sales_person_id)
-        as income
-    from employees as e
-    inner join sales as s on e.employee_id = s.sales_person_id
-    inner join products as p on s.product_id = p.product_id
-    order by s.sales_id
-)
-
 --запрос на получение итогового результата
 select distinct
-    seller,
-    operations,
-    floor(income) as income
-from total
+    concat(e.first_name,' ',e.last_name) as seller,
+    count(s.sales_id) as operations,
+    floor(sum(p.price * s.quantity)) as income 
+from employees e 
+inner join sales s on e.employee_id = s.sales_person_id
+inner join products p on p.product_id = s.product_id
+group by seller
 order by income desc limit 10;
 -----------------------------------------------------------------------
 --отчет о покупателях, первая покупка которых 
 --была в ходе проведения акций 
 --(акционные товары отпускали со стоимостью равной 0)
-with t1 as (
---запрос на объединение столбцов имя, фамилия для покупателей и продавцов
---и вывод всех строк для которых price = 0
-    select
-        s.customer_id as sc,
-        s.sale_date,
-        concat(c.first_name, ' ', c.last_name) as customer,
-        concat(e.first_name, ' ', e.last_name) as seller
-    from customers as c
-    inner join sales as s on c.customer_id = s.customer_id
-    inner join employees as e on s.sales_person_id = e.employee_id
-    inner join products as p on s.product_id = p.product_id
-    where p.price = 0
-),
-
-t2 as (
---запрос на нумерацию строк для покупателей по дате,
---попавших в предыдущую выборку
-    select
-        *,
-        row_number()
-            over (partition by customer order by sale_date)
-        as row1
-    from t1
-    order by sc
-)
-
---запрос с итоговым результатом где row=1 является самой ранней 
---датой покупки акционного товара
-select
-    customer,
-    sale_date,
-    seller
-from t2
-where row1 = 1;
+--запрос с итоговым результатом
+select distinct on (concat(c.first_name, ' ', c.last_name))
+    concat(c.first_name, ' ', c.last_name) as customer,
+    s.sale_date,
+    concat(e.first_name, ' ', e.last_name) as seller
+from customers as c
+inner join sales as s on c.customer_id = s.customer_id
+inner join employees as e on s.sales_person_id = e.employee_id
+inner join products as p on s.product_id = p.product_id
+where p.price = 0
+order by customer, s.sale_date;
