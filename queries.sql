@@ -38,11 +38,10 @@ select
     to_char(s.sale_date, 'day') as day_of_week,
     floor(sum(s.quantity * p.price)) as income
 from employees as e
-inner join sales as s on e.employee_id = s.sales_person_id
-inner join products as p on s.product_id = p.product_id
-group by seller, day_of_week
-order by day_of_week, seller;
---date_part('isodow', sale_date)
+    inner join sales as s on e.employee_id = s.sales_person_id
+    inner join products as p on s.product_id = p.product_id
+group by seller, day_of_week, date_part('isodow', sale_date)
+order by date_part('isodow', sale_date), seller;
 -----------------------------------------------------------------
 --отчет содержит информацию о продавцах, 
 --чья средняя выручка за сделку меньше средней выручки за сделку 
